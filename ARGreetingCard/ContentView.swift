@@ -12,16 +12,18 @@ struct ARViewContainer: UIViewRepresentable {
     func makeUIView(context: Context) -> ARView {
         let arView = ARView(frame: .zero)
         
-        // Set up the AR session configuration
-        let configuration = ARWorldTrackingConfiguration()
-        configuration.planeDetection = [.horizontal] // Ensuring horizontal plane detection is set.
-        arView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+        // Check if the device supports VisionOS and adjust configurations accordingly
+        if let visionConfiguration = makeVisionConfiguration() {
+            arView.session.run(visionConfiguration, options: [.resetTracking, .removeExistingAnchors])
+        } else {
+            // Fallback to ARWorldTrackingConfiguration for other devices
+            let configuration = ARWorldTrackingConfiguration()
+            configuration.planeDetection = [.horizontal]
+            arView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+        }
         
-        // Create an anchor and add it to the scene
-        let anchor = AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: SIMD2<Float>(0.1, 0.1)))
-        
-        // Assuming text entity creation is successful
-        if let textEntity = createText("Happy Birthday!") {
+        // Create and add an anchor to the scene
+        if let anchor = createAnchor(), let textEntity = createText("Happy Birthday!") {
             textEntity.position = [0, 0.1, 0] // Adjust position as needed
             anchor.addChild(textEntity)
             arView.scene.addAnchor(anchor)
@@ -32,11 +34,36 @@ struct ARViewContainer: UIViewRepresentable {
     
     func updateUIView(_ uiView: ARView, context: Context) {}
     
-    func createText(_ text: String) -> Entity? {
-        let font = UIFont.systemFont(ofSize: 16) // Using UIFont
-        let mesh = MeshResource.generateText(text, extrusionDepth: 0.1, font: font)
+    // Helper function to create an anchor
+    func createAnchor() -> AnchorEntity? {
+        return AnchorEntity(.plane(.horizontal, classification: .any, minimumBounds: SIMD2<Float>(0.1, 0.1)))
+    }
+    
+    // Helper function to create a text entity
+    func createText(_ text: String) -> ModelEntity? {
+        let fontSize: CGFloat = 16
+        let extrusionDepth: Float = 0.1
+        
+        guard let font = UIFont(name: "Helvetica", size: fontSize) else {
+            print("Failed to load font.")
+            return nil
+        }
+        
+        let mesh = MeshResource.generateText(text, extrusionDepth: extrusionDepth, font: font)
         let material = SimpleMaterial(color: .white, isMetallic: true)
+        
         return ModelEntity(mesh: mesh, materials: [material])
+    }
+    
+    // Function to create a VisionOS-specific configuration if available
+    func makeVisionConfiguration() -> ARConfiguration? {
+        if #available(iOS 17.0, *) {
+            let configuration = ARWorldTrackingConfiguration()
+            configuration.planeDetection = [.horizontal]
+            // Add any VisionOS-specific configurations here
+            return configuration
+        }
+        return nil
     }
 }
 
