@@ -31,7 +31,7 @@ This project is structured using the Model-View-ViewModel (MVVM) design pattern 
 
 1. **Clone the Repository**: 
     ```bash
-    git clone https://github.com/yourusername/ARGreetingCard.git
+    git clone https://github.com/AidanBroHar/ARGreetingCard.git
     ```
 2. **Open the Project**:
     - Navigate to the project folder and open `ARGreetingCard.xcodeproj` in Xcode.
