@@ -1,7 +1,5 @@
 # ARGreetingCard
 
-# ARGreetingCard
-
 An Augmented Reality (AR) app built with SwiftUI and RealityKit, allowing users to view a greeting card on their iPhone. This project follows the MVVM architecture for clean, maintainable code.
 
 ## Requirements
